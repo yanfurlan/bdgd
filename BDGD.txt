@@ -1,0 +1,94 @@
+Estrutura do Banco de Dados:
+
+    Tabelas: Identifique as tabelas que contêm informações geográficas, como localização dos centros de distribuição, endereços, rotas e regiões de entrega.
+    Campos: Verifique quais campos estão disponíveis para cada tabela (por exemplo, latitude, longitude, endereço).
+
+Tipos de Dados Geoespaciais:
+
+    Coordenadas: Dados de latitude e longitude para identificar pontos específicos.
+    Geometria: Dados que definem áreas e rotas, como polígonos e linhas.
+
+Consultas Geoespaciais:
+
+    Proximidade: Consultas para encontrar locais próximos a um ponto específico.
+    Cobertura: Consultas para determinar quais áreas estão cobertas por um centro de distribuição.
+
+Ferramentas e Tecnologias:
+
+    GIS (Sistema de Informação Geográfica): Ferramentas que podem ser usadas para visualizar e analisar dados geoespaciais.
+    Extensões Geoespaciais: Algumas plataformas de banco de dados, como PostgreSQL com PostGIS, oferecem suporte para operações geoespaciais.
+
+Visualização de Dados:
+
+    Mapas: Utilização de ferramentas de visualização para representar dados geográficos em mapas.
+    Dashboards: Criação de dashboards para monitorar a cobertura e eficiência da distribuição.
+
+    Em Oracle, trabalhar com dados geoespaciais envolve o uso do Oracle Spatial and Graph, uma extensão poderosa do Oracle Database que oferece suporte para dados geoespaciais e análise espacial. Aqui estão alguns pontos-chave sobre como lidar com uma Base de Dados Geográfica da Distribuidora (BDGD) no Oracle:
+
+1. Configuração do Ambiente
+    
+Antes de começar, certifique-se de que a funcionalidade Oracle Spatial and Graph esteja instalada e configurada no seu banco de dados Oracle.
+2. Criando Tabelas Geoespaciais
+    
+Para armazenar dados geoespaciais, você pode criar tabelas usando tipos de dados espaciais. Um exemplo básico:
+
+    CREATE TABLE centros_distribuicao (
+        id NUMBER PRIMARY KEY,
+        nome VARCHAR2(100),
+        localizacao SDO_GEOMETRY
+    );
+
+3. Inserindo Dados Geoespaciais
+
+Os dados geoespaciais são inseridos usando o tipo SDO_GEOMETRY. Um exemplo de inserção de um ponto:
+
+INSERT INTO centros_distribuicao (id, nome, localizacao)
+VALUES (
+    1,
+    'Centro A',
+    SDO_GEOMETRY(
+        2001, -- Tipo de geometria (2001 = ponto)
+        NULL, -- SRID (Spatial Reference Identifier)
+        SDO_POINT_TYPE(10, 20, NULL), -- Coordenadas (x, y, z)
+        NULL, -- Geometria de direção
+        NULL  -- Geometria de polígono
+    )
+);
+
+4. Consultas Espaciais
+
+Você pode realizar consultas espaciais para encontrar centros de distribuição próximos a um ponto específico. Aqui está um exemplo de consulta para encontrar centros dentro de um raio de 50 unidades de um ponto específico:
+
+SELECT nome
+FROM centros_distribuicao
+WHERE SDO_NN(localizacao, 
+              SDO_GEOMETRY(
+                  2001, 
+                  NULL, 
+                  SDO_POINT_TYPE(15, 25, NULL), 
+                  NULL, 
+                  NULL
+              ),
+              'sdo_num_res=5',
+              0.05
+            ) = 'TRUE';
+
+5. Análise Espacial
+
+Oracle Spatial and Graph fornece várias funções para análise espacial. Algumas funções úteis incluem:
+            
+                SDO_DISTANCE: Calcula a distância entre dois pontos.
+                SDO_WITHIN_DISTANCE: Determina se um objeto está dentro de uma certa distância de outro objeto.
+                SDO_INTERSECTION: Encontra a interseção entre dois objetos espaciais.
+            
+6. Indexação Espacial
+            
+Para melhorar o desempenho das consultas espaciais, você deve criar índices espaciais:
+
+CREATE INDEX idx_localizacao
+ON centros_distribuicao(localizacao)
+INDEXTYPE IS MDSYS.SPATIAL_INDEX;
+
+7. Visualização e Ferramentas
+
+Para visualizar dados geoespaciais, você pode usar ferramentas de GIS que se integrem com o Oracle Spatial, como Oracle Maps, ArcGIS, ou QGIS.
